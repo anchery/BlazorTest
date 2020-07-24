@@ -1,0 +1,34 @@
+﻿@page "/parent"
+
+<Child OnClick="ClickHandler"></Child>
+<p>@message</p>
+
+
+<p>@SelectedEmployeesCount</p>
+<Child OnEmployeeSelection="EmployeeSelectionChanged"></Child>
+
+
+@code {
+
+    string message = "Hello from ParentComponent";
+
+    void ClickHandler(string newMessage)
+    {
+        message = newMessage;
+    }
+
+    protected int SelectedEmployeesCount { get; set; } = 0;
+
+    protected void EmployeeSelectionChanged(bool isSelected)
+    {
+        if (isSelected)
+        {
+            SelectedEmployeesCount++;
+        }
+        else
+        {
+            SelectedEmployeesCount--;
+        }
+    }
+
+}

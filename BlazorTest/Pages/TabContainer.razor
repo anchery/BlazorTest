@@ -1,0 +1,20 @@
+﻿@page "/tabcontainer"
+
+<h1>@SelectedTab</h1>
+
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    public string SelectedTab { get; private set; }
+
+    public void SetSelectedTab(string selectedTab)
+    {
+        SelectedTab = selectedTab;
+        StateHasChanged();
+    }
+}

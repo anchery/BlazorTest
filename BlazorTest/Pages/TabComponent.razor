@@ -1,0 +1,16 @@
+﻿@page "/tabcomp"
+
+<div @onclick="SetSelectedTab">@Title @(TabContainer.SelectedTab == Title ? "Selected" : "")</div>
+
+
+@code {
+
+    [CascadingParameter] TabContainer TabContainer { get; set; }
+
+    [Parameter] public string Title { get; set; }
+
+    void SetSelectedTab()
+    {
+        TabContainer.SetSelectedTab(Title);
+    }
+}

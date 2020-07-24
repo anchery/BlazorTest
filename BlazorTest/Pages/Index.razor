@@ -1,0 +1,58 @@
+﻿@page "/"
+
+<div>
+
+    <select class="form-control col-4" @onchange="DoStuff">
+        @foreach (var template in templates)
+        {
+            <option value=@template>@template</option>
+        }
+    </select>
+
+    <Parent></Parent>
+
+    @*<div class="dropdown">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                Dropdown button
+            </button>
+            <div class="dropdown-menu" @bind="OnSelected">
+                <a class="dropdown-item" href="#">Link 1</a>
+                <a class="dropdown-item" href="#">Link 2</a>
+                <a class="dropdown-item" href="#">Link 3</a>
+            </div>
+        </div>*@
+</div>
+
+
+
+@code {
+    protected override Task OnInitializedAsync()
+    {
+        //Log.Information("INFO");
+        //Log.Warning("WARN");
+        return base.OnInitializedAsync();
+    }
+    private void OnSelected(string selection)
+    {
+        Console.WriteLine(selection);
+    }
+    List<string> templates = new List<string>() { "", "Maui", "Hawaii", "Niihau", "Kauai", "Kahoolawe" };
+    string selectedString = "Maui";
+
+    void DoStuff(ChangeEventArgs e)
+    {
+        try
+        {
+
+            selectedString = e.Value.ToString();
+            Log.Information("You selected {0}", selectedString);
+            Console.WriteLine("It is definitely: " + selectedString);
+        }
+        catch (Exception ex)
+        {
+            //throw (new Exception(ex.Message));
+            Log.Error(ex.Message);
+        }
+
+    }
+}

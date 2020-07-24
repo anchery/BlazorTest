@@ -1,0 +1,20 @@
+﻿<!-- Child Component -->
+
+<button @onclick="@(() => OnClick.InvokeAsync("Hello from ChildComponent"))">Click me</button>
+
+<input type="checkbox" checked="@IsSelected" @onchange="CheckBoxChanged" />
+@code {
+
+    [Parameter] public EventCallback<string> OnClick { get; set; }
+    
+    protected bool IsSelected { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnEmployeeSelection { get; set; }
+
+    protected async Task CheckBoxChanged(ChangeEventArgs e)
+    {
+        IsSelected = (bool)e.Value;
+        await OnEmployeeSelection.InvokeAsync(IsSelected);
+    }
+}

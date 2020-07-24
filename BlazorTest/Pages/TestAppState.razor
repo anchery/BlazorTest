@@ -1,0 +1,23 @@
+﻿@page "/teststate"
+
+@inject AppState AppState
+@implements IDisposable
+
+@AppState.SelectedColour
+
+<Red />
+<Blue />
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        AppState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
+    }
+
+}
