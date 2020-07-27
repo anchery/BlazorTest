@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BlazorTest.Data;
-
+using Blazored.Toast;
 
 namespace BlazorTest
 {
@@ -31,7 +31,10 @@ namespace BlazorTest
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<AppState>();
-         }
+            services.AddBlazoredToast();
+            services.AddTransient<SqliteDataAccess, SqliteDataAccess>();
+            services.AddTransient<SqlDataAccess, SqlDataAccess>();
+        }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
