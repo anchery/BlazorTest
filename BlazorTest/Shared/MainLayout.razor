@@ -8,12 +8,11 @@
 </div>
 
 <div class="main">
-    @* TODO - Hide on login screen *@
     <AuthorizeView>
         <Authorized>
             <div class="top-row px-6">
-                <label>Welcome @context.User.Identity.Name</label>
-                <a @onclick="Logout">Logout</a>
+                <label style="padding-top:0.5em;">Welcome, @context.User.Identity.Name</label>
+                <a href="/" @onclick="Logout">Logout</a>
             </div>
         </Authorized>
         <NotAuthorized>
@@ -23,7 +22,12 @@
         </NotAuthorized>
     </AuthorizeView>
 
-    <div class="content px-4">
+    <div class="container" style="
+        height: 100%;
+        vertical-align: middle;
+        margin: auto;
+        /*top:50%; vertical align item to middle*/
+        position:absolute;">
         @Body
     </div>
 </div>
