@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using BlazorTest.Data;
 using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Authorization;
+using Blazored.SessionStorage;
 
 namespace BlazorTest
 {
@@ -33,9 +34,11 @@ namespace BlazorTest
             services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<AppState>();
             services.AddBlazoredToast();
+            services.AddBlazoredSessionStorage();
             services.AddTransient<SqliteDataAccess, SqliteDataAccess>();
             services.AddTransient<SqlDataAccess, SqlDataAccess>();
             services.AddSingleton<AuthenticationStateProvider, AuthStateProvider>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
