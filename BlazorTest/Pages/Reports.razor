@@ -4,8 +4,16 @@
 @using ChartJs.Blazor.ChartJS.Common.Properties
 @using ChartJs.Blazor.Util
 
+<AuthorizeView>
+    <Authorized>
+        <ChartJsPieChart @ref="_pieChartJs" Config="@_config" Width="600" Height="300" />
+    </Authorized>
+    <NotAuthorized>
+        <p>Please login!</p>
+    </NotAuthorized>
+</AuthorizeView>
 
-<ChartJsPieChart @ref="_pieChartJs" Config="@_config" Width="600" Height="300" />
+
 
 @code {
     private PieConfig _config;

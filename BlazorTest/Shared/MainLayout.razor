@@ -1,14 +1,27 @@
 ﻿@inherits LayoutComponentBase
 @using Blazored.Toast.Configuration
+@inject AuthenticationStateProvider _auth
+@inject NavigationManager navigationManager
 
 <div class="sidebar">
     <NavMenu />
 </div>
 
 <div class="main">
-    <div class="top-row px-4">
-        <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-    </div>
+    @* TODO - Hide on login screen *@
+    <AuthorizeView>
+        <Authorized>
+            <div class="top-row px-6">
+                <label>Welcome @context.User.Identity.Name</label>
+                <a @onclick="Logout">Logout</a>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            @*<div class="top-row px-4">
+                    <a href="" target="_blank">Login</a>
+                </div>*@
+        </NotAuthorized>
+    </AuthorizeView>
 
     <div class="content px-4">
         @Body
@@ -19,4 +32,11 @@
                 IconType="IconType.Material"
                 SuccessClass="success-toast-override"
                 ShowProgressBar="true"
-                RemoveToastsOnNavigation="true"/>
+                RemoveToastsOnNavigation="true" />
+@code{
+    private void Logout()
+    {
+        ((AuthStateProvider)_auth).LogoutUser();
+        navigationManager.NavigateTo("/");
+    }
+}

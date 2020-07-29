@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BlazorTest.Data;
 using Blazored.Toast;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace BlazorTest
 {
@@ -34,6 +35,7 @@ namespace BlazorTest
             services.AddBlazoredToast();
             services.AddTransient<SqliteDataAccess, SqliteDataAccess>();
             services.AddTransient<SqlDataAccess, SqlDataAccess>();
+            services.AddSingleton<AuthenticationStateProvider, AuthStateProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -62,6 +64,9 @@ namespace BlazorTest
             });
             
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

@@ -1,134 +1,146 @@
-﻿@page "/"
+﻿@page "/obs"
 
 @inject SqliteDataAccess _dbSqlite
 @inject SqlDataAccess _db
 @inject IToastService toast
 
-@if (!status)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <EditForm class="form-group" Model="@newObs" OnValidSubmit="SaveData">
-        <div>
-            <select class="form-control col-4" @onchange="DoStuff">
-                @foreach (var template in templates)
-                {
-                    <option value=@template>@template</option>
-                }
-            </select>
-            <div class="form-group">
-                @foreach (ObservationViewModel obs in ObsList.Where(e => e.GrpId == 1))
-                {
-                    <ComponentRB @bind-resp="resp" @bind-resp:event="respChanged" Obs="@obs"></ComponentRB>
-                }
-            </div>
-            <div>
-                <button class="btn btn-primary" type="submit">Submit</button>
-            </div>
-        </div>
-        </EditForm>
-        }
-
-
-        @code {
-            private ObservationModel newObs = new ObservationModel();
-            private List<ObservationGroupModel> ObsGroups;
-            private List<ObservationModel> obsItems;
-            private List<ObservationViewModel> ObsList = new List<ObservationViewModel>();
-            private List<ResponseModel> resp = new List<ResponseModel>();
-            private List<ResponseTypeModel> respType = new List<ResponseTypeModel>()
+<AuthorizeView>
+    <Authorized>
+        @if (!status)
         {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <EditForm class="form-group" Model="@newObs" OnValidSubmit="SaveData" Context="_con">
+                <div>
+                    <select class="form-control col-4" @onchange="DoStuff">
+                        @foreach (var template in templates)
+                        {
+                            <option value=@template>@template</option>
+                        }
+                    </select>
+                    <div class="form-group">
+                        @foreach (ObservationViewModel obs in ObsList.Where(e => e.GrpId == 1))
+                        {
+                            <ComponentRB @bind-resp="resp" @bind-resp:event="respChanged" Obs="@obs"></ComponentRB>
+                        }
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" type="submit">Submit</button>
+                    </div>
+                </div>
+            </EditForm>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>Please login!</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+
+@code {
+    private ObservationModel newObs = new ObservationModel();
+    private List<ObservationGroupModel> ObsGroups;
+    private List<ObservationModel> obsItems;
+    private List<ObservationViewModel> ObsList = new List<ObservationViewModel>();
+    private List<ResponseModel> resp = new List<ResponseModel>();
+    private List<ResponseTypeModel> respType = new List<ResponseTypeModel>()
+{
             new ResponseTypeModel {ResponseId=1,ResponseText="1"},
             new ResponseTypeModel {ResponseId=2,ResponseText="2"},
             new ResponseTypeModel {ResponseId=3,ResponseText="3"},
             new ResponseTypeModel {ResponseId=4,ResponseText="4"},
             new ResponseTypeModel {ResponseId=5,ResponseText="5"}
         };
-            private bool status = true;
-            protected override async Task OnInitializedAsync()
+    private bool status = true;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            //if(_db.op)
+            ObsGroups = await _db.GetObservationGroups("");
+            foreach (ObservationGroupModel grp in ObsGroups)
             {
-                try
-                {
-                    //Console.WriteLine(login.IsLoggedIn);
-                    ObsGroups = await _db.GetObservationGroups("");
-                    foreach (ObservationGroupModel grp in ObsGroups)
-                    {
-                        obsItems = await _db.GetObservations(grp.GrpId.ToString());
-                        ObservationViewModel ovm = new ObservationViewModel();
-                        ovm.GrpId = grp.GrpId;
-                        ovm.GrpText = grp.GrpText;
-                        ovm.observations = obsItems;
-                        ovm.responseTypes = respType;
-                        ObsList.Add(ovm);
-                    }
-                }
-                catch (Exception e)
-                {
-                    throw new Exception(e.Message);
-                }
-            }
-            protected override void OnAfterRender(bool firstRender)
-            {
-                if (!AppState.IsConnected)
-                {
-                    Log.Information("Connecting to DB...");
-                    if (!_dbSqlite.TestDBConnection())
-                        toast.ShowError("Failed to connect!", "DB Connection");
-                    else
-                    {
-                        AppState.IsConnected = true;
-                    }
-                    Log.Information("Connected.");
-                }
-
-
-                //status = true;
-                //base.OnAfterRender(firstRender);
-            }
-
-            private void OnSelected(string selection)
-            {
-                Console.WriteLine(selection);
-            }
-            
-            List<string> templates = new List<string>() { "", "Maui", "Hawaii", "Niihau", "Kauai", "Kahoolawe" };
-            string selectedString = "Maui";
-
-            void DoStuff(ChangeEventArgs e)
-            {
-                try
-                {
-
-                    selectedString = e.Value.ToString();
-                    Log.Information("You selected {0}", selectedString);
-                    Console.WriteLine("It is definitely: " + selectedString);
-                }
-                catch (Exception ex)
-                {
-                    //throw (new Exception(ex.Message));
-                    Log.Error(ex.Message);
-                }
-
-            }
-            
-            private void SaveData()
-            {
-                foreach (ResponseModel item in resp)
-                {
-                    Console.WriteLine(item.GrpId + "-" + item.ObsId + "-" + item.Response + "-" + item.Comment);
-                }
+                obsItems = await _db.GetObservations(grp.GrpId.ToString());
+                ObservationViewModel ovm = new ObservationViewModel();
+                ovm.GrpId = grp.GrpId;
+                ovm.GrpText = grp.GrpText;
+                ovm.observations = obsItems;
+                ovm.responseTypes = respType;
+                ObsList.Add(ovm);
             }
         }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender)
+            return;
 
-        @*<div class="dropdown">
-                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                    Dropdown button
-                </button>
-                <div class="dropdown-menu" @bind="OnSelected">
-                    <a class="dropdown-item" href="#">Link 1</a>
-                    <a class="dropdown-item" href="#">Link 2</a>
-                    <a class="dropdown-item" href="#">Link 3</a>
-                </div>
-            </div>*@
+        if (!AppState.IsConnected)
+        {
+            Log.Information("Connecting to DB...");
+            if (!_dbSqlite.TestDBConnection())
+                toast.ShowError("Failed to connect!", "DB Connection");
+            else
+            {
+                AppState.IsConnected = true;
+            }
+            Log.Information("Connected.");
+        }
+
+
+        //status = true;
+        //base.OnAfterRender(firstRender);
+    }
+
+    private void OnSelected(string selection)
+    {
+        Console.WriteLine(selection);
+    }
+
+    List<string> templates = new List<string>() { "", "Maui", "Hawaii", "Niihau", "Kauai", "Kahoolawe" };
+    string selectedString = "Maui";
+
+    void DoStuff(ChangeEventArgs e)
+    {
+        try
+        {
+
+            selectedString = e.Value.ToString();
+            Log.Information("You selected {0}", selectedString);
+            Console.WriteLine("It is definitely: " + selectedString);
+        }
+        catch (Exception ex)
+        {
+            //throw (new Exception(ex.Message));
+            Log.Error(ex.Message);
+        }
+
+    }
+
+    private void SaveData()
+    {
+        foreach (ResponseModel item in resp)
+        {
+            Console.WriteLine(item.GrpId + "-" + item.ObsId + "-" + item.Response + "-" + item.Comment);
+        }
+    }
+}
+
+@*<div class="dropdown">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+            Dropdown button
+        </button>
+        <div class="dropdown-menu" @bind="OnSelected">
+            <a class="dropdown-item" href="#">Link 1</a>
+            <a class="dropdown-item" href="#">Link 2</a>
+            <a class="dropdown-item" href="#">Link 3</a>
+        </div>
+    </div>*@
