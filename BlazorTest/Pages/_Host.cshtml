@@ -19,7 +19,7 @@
 <body>
     <app>
         @*<component type="typeof(App)" render-mode="ServerPrerendered" />*@
-        <component type="typeof(App)" render-mode="Server"/>
+        <component type="typeof(App)" render-mode="Server" />
     </app>
 
     <div id="blazor-error-ui">
@@ -34,11 +34,13 @@
     </div>
 
     <script src="_framework/blazor.server.js"></script>
+    <script src="js/scripts.js"></script>
+
     @*<script type="text/javascript" src="_content/Blazor.Extensions.Storage.JS"></script>*@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
-    
+
     <!-- Reference the included moment.js javascript file. -->
     <script src="_content/ChartJs.Blazor/moment-with-locales.min.js" type="text/javascript" language="javascript"></script>
 
@@ -50,5 +52,8 @@
 
     <!-- Some styling -->
     <link rel="stylesheet" href="_content/ChartJs.Blazor/ChartJSBlazor.css" />
+
+    <script src="_content/BlazorInputFile/inputfile.js"></script>
+
 </body>
 </html>

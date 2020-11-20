@@ -54,7 +54,8 @@ namespace BlazorTest.Data
                 }
             }
         }
-        public int SaveData<T>(string sql, T parameters)
+        
+        public int SaveData<T,U>(string sql, U parameters)
         {
             int rows = 0;
             try

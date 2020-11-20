@@ -1,18 +1,28 @@
-﻿@page "/obs"
-
+﻿@page "/"
+@using System.Collections
+@using System.IO
+@using BlazorInputFile
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration _config
+@inject AppState _state
 @inject SqliteDataAccess _dbSqlite
 @inject SqlDataAccess _db
 @inject IToastService toast
+@inject IJSRuntime iJSRuntime
+@inject NavigationManager uriHelper;
 
-<AuthorizeView>
-    <Authorized>
-        @if (!status)
-        {
-            <p>Loading...</p>
-        }
-        else
-        {
-            <EditForm class="form-group" Model="@newObs" OnValidSubmit="SaveData" Context="_con">
+@*<AuthorizeView>
+    <Authorized>*@
+@if (!status)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="container">
+
+
+        @*<EditForm class="form-group" Model="@newObs" OnValidSubmit="SaveData" Context="_con">
                 <div>
                     <select class="form-control col-4" @onchange="DoStuff">
                         @foreach (var template in templates)
@@ -23,25 +33,51 @@
                     <div class="form-group">
                         @foreach (ObservationViewModel obs in ObsList.Where(e => e.GrpId == 1))
                         {
-                            <ComponentRB @bind-resp="resp" @bind-resp:event="respChanged" Obs="@obs"></ComponentRB>
+                            <ComponentRBLeft @bind-resp="resp" @bind-resp:event="respChanged" Obs="@obs"></ComponentRBLeft>
                         }
+                    </div>
+                    <div>
+                        <ComponentContextRB Caption="Gender" items="@items" respChanged="RBSelectionChanged"></ComponentContextRB>
+                    </div>
+                    <div>
+                        <label class="control-label col-sm-4" style="margin:0px;padding:0px;">When did you get arrested for DUI?</label>
+                        <InputText type="number" @bind-Value="@months" class="form-control col-sm-1 custom-control-inline mt-1" min="1" max="99" /> <span class="ml-1">months ago</span>
                     </div>
                     <div>
                         <button class="btn btn-primary" type="submit">Submit</button>
                     </div>
                 </div>
             </EditForm>
-        }
-    </Authorized>
-    <NotAuthorized>
-        <p>Please login!</p>
-    </NotAuthorized>
-</AuthorizeView>
+            <a href="http://survpocrb-vip.corp.scantron.com/Reports/browse/" target="_blank">SSRS</a>
+            <button class="btn btn-primary" @onclick="GenerateExcel">Excel</button>*@
+
+        <label for="imageFile" class="custom-file-upload mt-4">
+            Take Picture
+            <InputFile id="imageFile" OnChange="HandleFileSelected" capture />
+        </label>
+
+
+        @*<input type="button" value="View Image" onclick="ResizeImage()" />*@
+    </div>
+
+}
+@*</Authorized>
+        <NotAuthorized>
+            <p>Please login!</p>
+        </NotAuthorized>
+    </AuthorizeView>*@
 
 
 
 
 @code {
+ 
+    private string filename = "";
+    private string imgfile = "";
+    protected IFileListEntry file;
+
+    private string months = "";
+    protected int gender;
     private ObservationModel newObs = new ObservationModel();
     private List<ObservationGroupModel> ObsGroups;
     private List<ObservationModel> obsItems;
@@ -56,12 +92,20 @@
             new ResponseTypeModel {ResponseId=5,ResponseText="5"}
         };
     private bool status = true;
+    private List<MetaItemModel> items = new List<MetaItemModel>()
+{
+        new MetaItemModel { ItemId=1, ItemText="Male"},
+        new MetaItemModel { ItemId=2, ItemText="Female"}
+    };
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            //if(_db.op)
             ObsGroups = await _db.GetObservationGroups("");
+            if (ObsGroups == null)
+                return;
+
             foreach (ObservationGroupModel grp in ObsGroups)
             {
                 obsItems = await _db.GetObservations(grp.GrpId.ToString());
@@ -72,17 +116,19 @@
                 ovm.responseTypes = respType;
                 ObsList.Add(ovm);
             }
+            Console.WriteLine(((AppState)_state).Debug);
         }
         catch (Exception e)
         {
-            throw new Exception(e.Message);
+            System.Diagnostics.Debug.WriteLine(e.Message);
         }
     }
     protected override void OnAfterRender(bool firstRender)
     {
+
         if (!firstRender)
             return;
-
+        imgfile = "res/img.jpg";
         if (!AppState.IsConnected)
         {
             Log.Information("Connecting to DB...");
@@ -132,15 +178,146 @@
             Console.WriteLine(item.GrpId + "-" + item.ObsId + "-" + item.Response + "-" + item.Comment);
         }
     }
-}
 
-@*<div class="dropdown">
-        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-            Dropdown button
-        </button>
-        <div class="dropdown-menu" @bind="OnSelected">
-            <a class="dropdown-item" href="#">Link 1</a>
-            <a class="dropdown-item" href="#">Link 2</a>
-            <a class="dropdown-item" href="#">Link 3</a>
-        </div>
-    </div>*@
+    protected void RBSelectionChanged(DictionaryEntry val)
+    {
+        switch (val.Key.ToString())
+        {
+            case "Gender":
+                gender = (int)val.Value;
+                break;
+        }
+    }
+
+    private async Task ExcelTest()
+    {
+        List<ObsModel> obs = new List<ObsModel>();
+        string sql = @"Select * From vwObservations";
+
+        obs = await _db.LoadData<ObsModel, dynamic>(sql, null);
+
+        var grps = from d in obs
+                   group d by d.SerialNo
+              into grp
+                   select new
+                   {
+                       Foo = grp.Key,
+                       Bars = grp.Select(d2 => d2.ObsNo + '-' + d2.Response).ToArray()
+                   };
+
+        // find the total number of (data) rows
+        int rows = grps.Max(grp => grp.Bars.Length);
+
+        // output columns
+        foreach (var grp in grps)
+        {
+            Console.Write(grp.Foo + "\n");
+        }
+        Console.WriteLine();
+        // output data
+        IDictionary<string, string> obsx = new Dictionary<string, string>();
+
+        for (int i = 0; i < rows; i++)
+        {
+            foreach (var grp in grps)
+            {
+                obsx.Add(grp.Bars[i].ToString().Split("-")[0], grp.Bars[i].ToString().Split("-")[1]);
+                Console.Write((i < grp.Bars.Length ? grp.Bars[i] : null) + "\t");
+            }
+            //Console.WriteLine();
+        }
+        var x = obsx.OrderBy(e => e.Key);
+    }
+
+    private async Task GenerateExcel()
+    {
+        try
+        {
+            bool flag = true;
+            List<ObsModel> obs = new List<ObsModel>();
+            string sql = @"Select * From vwObservations";
+
+            obs = await _db.LoadData<ObsModel, dynamic>(sql, null);
+            var result = obs.GroupBy(x => x.SerialNo).ToList();
+
+
+            //delete existing
+            var ctr = _db.SaveData<ObsModel, dynamic>("Delete From DataExport", null);
+            if (ctr < 0)
+                flag = false;
+
+            //insert SlNo
+            if (flag)
+            {
+                foreach (var row in result)
+                {
+                    //var key = row.First().SerialNo;
+                    ctr = _db.SaveData<ObsModel, dynamic>("Insert into DataExport (SerialNo) values(@SerialNo)", new { @SerialNo = row.First().SerialNo });
+                    if (ctr < 0)
+                        flag = false;
+                }
+            }
+
+            if (flag)
+            {
+                //insert responses
+                foreach (var row in result)
+                {
+                    foreach (var r in row)
+                    {
+                        sql = $"Update DataExport SET [{r.ObsNo}] = {r.Response} Where SerialNo=@SerialNo";
+                        ctr = _db.SaveData<ObsModel, dynamic>(sql, new { @SerialNo = r.SerialNo });
+                        Console.WriteLine(ctr);
+                    }
+                }
+                //Generate report
+                ExcelService excel = new ExcelService();
+                List<DataExportModel> exportData = await _db.LoadData<DataExportModel, dynamic>("Select * from DataExport", null);
+                excel.GenerateExcel(iJSRuntime, exportData);
+            }
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+    }
+
+    protected void HandleFileSelected(IFileListEntry[] files)
+    {
+        file = files.FirstOrDefault();
+        filename = file.Name;
+        if (file != null)
+        {
+            SaveFile();
+        }
+    }
+
+    //Save file to /wwwroot/res folder
+    protected async void SaveFile()
+    {
+        try
+        {
+            var ms = new MemoryStream();
+            while (ms.Length == 0)
+                await file.Data.CopyToAsync(ms);
+            //filename = "./wwwroot/res/" + filename;
+            filename = "./wwwroot/res/img.jpg";
+            using (FileStream fs = new FileStream(filename, FileMode.Create, System.IO.FileAccess.Write))
+            {
+                ms.Seek(0, System.IO.SeekOrigin.Begin);
+                ms.CopyTo(fs);
+            }
+        }
+        catch (Exception e)
+        {
+            System.Diagnostics.Debug.WriteLine(e.Message);
+        }
+
+    }
+    private async void Resizeimage()
+    {
+        await iJSRuntime.InvokeAsync<Index>("ResizeImage");
+
+        uriHelper.NavigateTo(uriHelper.Uri, forceLoad: true);
+    }
+}

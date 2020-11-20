@@ -1,0 +1,29 @@
+﻿@page "/two"
+    <div class="container">
+
+
+        <h3>Two-way Data Binding</h3>
+        <div>@Name</div>
+        <b>Name :</b>
+        <input value="@Name" @onchange="@(e => {Name = e.Value.ToString();})" />
+        <b>Name :</b>
+        <input @bind="@Name" @bind:event="oninput" />
+        <b>Colour :</b>
+        <input @bind="Colour" />
+
+        <div @bind-style="Colour" @bind-style:event="onchange">
+            <h3>The background colour of this text changes</h3>
+        </div>
+        <div>
+            <textarea @bind="Description" @bind:event="oninput" />
+        </div>
+        <div>
+            Count : @Description.Length
+        </div>
+    </div>
+
+    @code {
+        public string Description { get; set; } = string.Empty;
+        protected string Colour { get; set; } = "background-color:white";
+        protected string Name { get; set; } = "Tom";
+    }

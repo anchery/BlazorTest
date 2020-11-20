@@ -28,7 +28,6 @@ namespace BlazorTest
             .Enrich.FromLogContext()
             .WriteTo.File(log)
 
-            //.WriteTo.File(@"C:\Scantron\log-20200724.txt")
             .CreateLogger();
 
             CreateHostBuilder(args).Build().Run();
@@ -36,15 +35,6 @@ namespace BlazorTest
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                //.ConfigureLogging((hostingContext, builder) =>
-                //{
-                //    var config = new ConfigurationBuilder()
-                //    .AddJsonFile("appsettings.json")
-                //    .Build();
-
-                //    string log = config.GetSection("Logging").GetValue<string>("PathFormat");
-                //    builder.AddFile(log);
-                //})
             .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

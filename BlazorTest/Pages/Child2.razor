@@ -1,0 +1,31 @@
+﻿<h3>Child2</h3>
+<div class="container">
+    <EditForm Model="new { }">
+        <input type="checkbox" checked="@IsSelected" @onchange="CheckBoxChanged" />
+        <input type="text" @onchange="TextBoxChanged" />
+    </EditForm>
+  
+</div>
+
+
+@code {
+    protected bool IsSelected { get; set; }
+    public string str { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<bool> OnCheckBoxChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnTextBoxChanged { get; set; }
+
+    protected async Task CheckBoxChanged(ChangeEventArgs e)
+    {
+        IsSelected = (bool)e.Value;
+        await OnCheckBoxChanged.InvokeAsync(IsSelected);
+    }
+    protected async Task TextBoxChanged(ChangeEventArgs e)
+    {
+        str = e.Value.ToString();
+        await OnTextBoxChanged.InvokeAsync(str);
+    }
+}

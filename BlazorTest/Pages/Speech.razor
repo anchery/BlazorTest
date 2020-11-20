@@ -1,0 +1,94 @@
+﻿@page "/speech"
+
+@using Toolbelt.Blazor.SpeechRecognition
+@inject SpeechRecognition SpeechRecognition
+@implements IDisposable
+
+@*<div>
+    <select @onchange="OnChangeLang" disabled="@(IsListening)">
+        <option selected>en-US</option>
+        <option>ja-JP</option>
+    </select>
+</div>*@
+<div class="container mt-4">
+    <button @onclick="OnClickStart" disabled="@(IsListening)">start</button>
+
+    <button @onclick="OnClickStop" disabled="@(!IsListening)">stop</button>
+
+    <div>
+        @foreach (var result in this.Results)
+        {
+            if (result.IsFinal)
+            {
+                <text>@result.Items[0].Transcript</text>
+            }
+            else
+            {
+                <i style="color:#ddd;">@result.Items[0].Transcript</i>
+            }
+        }
+    </div>
+    <div class="alert-danger">@msg</div>
+</div>
+
+
+@code {
+
+    private string @msg = "";
+    SpeechRecognitionResult[] Results = new SpeechRecognitionResult[0];
+
+    bool IsListening = false;
+
+    protected override void OnInitialized()
+    {
+        this.SpeechRecognition.Lang = "en-US";
+        this.SpeechRecognition.InterimResults = true;
+        this.SpeechRecognition.Continuous = true;
+        this.SpeechRecognition.Result += OnSpeechRecognized;
+        this.SpeechRecognition.End += OnSpeechEnded;
+    }
+
+    private void OnChangeLang(ChangeEventArgs args)
+    {
+        this.SpeechRecognition.Lang = args.Value.ToString();
+    }
+
+    private void OnSpeechRecognized(object sender, SpeechRecognitionEventArgs args)
+    {
+        this.Results = args.Results.Skip(args.ResultIndex).ToArray();
+        this.StateHasChanged();
+    }
+
+    private async Task OnClickStart()
+    {
+        if (!this.IsListening)
+        {
+            this.IsListening = true;
+            await this.SpeechRecognition.StartAsync();
+        }
+    }
+
+    private async Task OnClickStop()
+    {
+        if (this.IsListening)
+        {
+            this.IsListening = false;
+            await this.SpeechRecognition.StopAsync();
+        }
+    }
+
+    private void OnSpeechEnded(object sender, EventArgs args)
+    {
+        if (this.IsListening)
+        {
+            this.IsListening = false;
+            this.StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        this.SpeechRecognition.Result -= OnSpeechRecognized;
+        this.SpeechRecognition.End -= OnSpeechEnded;
+    }
+}

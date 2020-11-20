@@ -1,0 +1,34 @@
+﻿@page "/event"
+<h3>Event Handling</h3>
+<div class="container">
+    <EditForm Model="new { }">
+        <img src="res/logo.jpg" alt="logo" style="visibility:@visible"
+             width="50%" height="50%"
+             @onmousemove="@MouseMove" />
+        <h1>@Coordinates</h1>
+
+        <InputCheckbox @bind-Value="@IsChecked" @onclick="CheckChanged">Show</InputCheckbox>
+    </EditForm>
+
+</div>
+
+
+@code {
+    public bool IsChecked { get; set; } = true;
+    public string visible { get; set; } = "visible";
+    public string Coordinates { get; set; }
+
+    private void MouseMove(MouseEventArgs e)
+    {
+        Coordinates = $"X={e.ClientX}, Y={e.ClientY}";
+    }
+
+    private void CheckChanged(MouseEventArgs e)
+    {
+        if (IsChecked)
+            visible = "hidden";
+        else
+            visible = "visible";
+
+    }
+}

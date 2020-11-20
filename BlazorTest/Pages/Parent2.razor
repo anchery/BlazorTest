@@ -1,0 +1,33 @@
+﻿@page "/parent2"
+<h3>Parent2</h3>
+<div class="container">
+    <p>SelectedCheckboxCount: @SelectedCheckboxCount</p>
+    <p>From child: @strFromChild</p>
+
+    <Child2 OnCheckBoxChanged="CheckboxChanged"></Child2>
+    <Child2 OnCheckBoxChanged="CheckboxChanged"
+            OnTextBoxChanged="TextboxChanged"></Child2>
+</div>
+
+
+
+@code {
+    protected int SelectedCheckboxCount { get; set; } = 0;
+    protected string strFromChild { get; set; } = string.Empty;
+
+    protected void CheckboxChanged(bool isSelected)
+    {
+        if (isSelected)
+        {
+            SelectedCheckboxCount++;
+        }
+        else
+        {
+            SelectedCheckboxCount--;
+        }
+    }
+    protected void TextboxChanged(string str)
+    {
+        strFromChild = str;
+    }
+}

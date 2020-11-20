@@ -13,6 +13,8 @@ using BlazorTest.Data;
 using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Authorization;
 using Blazored.SessionStorage;
+using MASEPUtilities;
+using Toolbelt.Blazor.Extensions.DependencyInjection;
 
 namespace BlazorTest
 {
@@ -32,13 +34,14 @@ namespace BlazorTest
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
-            services.AddSingleton<AppState>();
+            services.AddSingleton<AppState>(e => new AppState(Configuration.GetSection("Debug")));
             services.AddBlazoredToast();
             services.AddBlazoredSessionStorage();
             services.AddTransient<SqliteDataAccess, SqliteDataAccess>();
             services.AddTransient<SqlDataAccess, SqlDataAccess>();
             services.AddSingleton<AuthenticationStateProvider, AuthStateProvider>();
-
+            services.AddSpeechRecognition();
+            services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
